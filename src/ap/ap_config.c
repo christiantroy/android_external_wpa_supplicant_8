@@ -161,8 +161,8 @@ struct hostapd_config * hostapd_config_defaults(void)
 	conf->tx_queue[3] = txq_bk;
 
 	/* TEMP: hard-coded HT capabilities. We should get these from wiphy */
-	conf->ht_capab = HT_CAP_INFO_SHORT_GI20MHZ | HT_CAP_INFO_GREEN_FIELD |
-			 HT_CAP_INFO_RX_STBC_1 | HT_CAP_INFO_SMPS_DISABLED;
+	//conf->ht_capab = HT_CAP_INFO_SHORT_GI20MHZ | HT_CAP_INFO_GREEN_FIELD |
+	//		 HT_CAP_INFO_RX_STBC_1 | HT_CAP_INFO_SMPS_DISABLED;
 
 	return conf;
 }
