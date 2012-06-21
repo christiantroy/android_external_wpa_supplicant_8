@@ -130,6 +130,9 @@ void wpa_supplicant_mark_disassoc(struct wpa_supplicant *wpa_s)
 	bssid_changed = !is_zero_ether_addr(wpa_s->bssid);
 	os_memset(wpa_s->bssid, 0, ETH_ALEN);
 	os_memset(wpa_s->pending_bssid, 0, ETH_ALEN);
+#ifdef CONFIG_P2P
+	os_memset(wpa_s->go_dev_addr, 0, ETH_ALEN);
+#endif /* CONFIG_P2P */
 	wpa_s->current_bss = NULL;
 	wpa_s->assoc_freq = 0;
 #ifdef CONFIG_IEEE80211R
@@ -592,9 +595,10 @@ static struct wpa_ssid * wpa_scan_res_match(struct wpa_supplicant *wpa_s,
 			continue;
 		}
 
-		if (bss->caps & IEEE80211_CAP_IBSS) {
+		if ((bss->caps & IEEE80211_CAP_IBSS) &&
+				ssid->mode != IEEE80211_MODE_IBSS) {
 			wpa_dbg(wpa_s, MSG_DEBUG, "   skip - IBSS (adhoc) "
-				"network");
+				"mismatch");
 			continue;
 		}
 
@@ -778,6 +782,12 @@ wpa_supplicant_pick_new_network(struct wpa_supplicant *wpa_s)
 	int prio;
 	struct wpa_ssid *ssid;
 
+// Don't try to automatically start a new ad-hoc network if no network
+// is available on Android. It doesn't make sense as it'll fail anyway
+// because nothing will reply to the DHCP request. (It'll also
+// repeatedly fail because the frequency is not set and it'll keep
+// retrying draining battery.)
+#ifndef ANDROID
 	for (prio = 0; prio < wpa_s->conf->num_prio; prio++) {
 		for (ssid = wpa_s->conf->pssid[prio]; ssid; ssid = ssid->pnext)
 		{
@@ -788,6 +798,7 @@ wpa_supplicant_pick_new_network(struct wpa_supplicant *wpa_s)
 				return ssid;
 		}
 	}
+#endif
 	return NULL;
 }
 
